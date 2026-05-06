@@ -2,10 +2,10 @@
 name: gate-dex-wallet-cli-asset-query
 version: "2026.4.23-2"
 updated: "2026-04-23"
-description: "gate-wallet CLI asset query module. Balance (USD total), wallet addresses (EVM + Solana), token list with balances, transaction history, swap history. Read-only; no signing involved."
+description: "gate-dex CLI asset query module. Balance (USD total), wallet addresses (EVM + Solana), token list with balances, transaction history, swap history. Read-only; no signing involved."
 ---
 
-# Gate Wallet CLI — Asset Query
+# Gate DEX CLI — Asset Query
 
 > Read-only module — portfolio value, wallet addresses, token balances, transaction and swap history. No GV checkin or signing involved.
 
@@ -25,7 +25,7 @@ description: "gate-wallet CLI asset query module. Balance (USD total), wallet ad
 ### Balance
 
 ```bash
-gate-wallet balance
+gate-dex balance
 ```
 
 Returns total portfolio value in USD across all chains.
@@ -33,7 +33,7 @@ Returns total portfolio value in USD across all chains.
 ### Wallet Addresses
 
 ```bash
-gate-wallet address
+gate-dex address
 ```
 
 Returns EVM address and Solana address from the local auth file. No network call needed.
@@ -49,10 +49,10 @@ Output example:
 ### Token List
 
 ```bash
-gate-wallet tokens
-gate-wallet tokens --chain ETH
-gate-wallet tokens --chain ETH,SOL
-gate-wallet tokens --chain ARB --page 2 --size 50
+gate-dex tokens
+gate-dex tokens --chain ETH
+gate-dex tokens --chain ETH,SOL
+gate-dex tokens --chain ARB --page 2 --size 50
 ```
 
 | Option | Description | Default |
@@ -66,8 +66,8 @@ Network keys are case-insensitive. Common values: `ETH`, `BSC`, `ARB`, `POLYGON`
 ### Transaction History
 
 ```bash
-gate-wallet tx-history
-gate-wallet tx-history --page 2 --limit 20
+gate-dex tx-history
+gate-dex tx-history --page 2 --limit 20
 ```
 
 | Option | Default |
@@ -80,7 +80,7 @@ gate-wallet tx-history --page 2 --limit 20
 ### Transaction Detail
 
 ```bash
-gate-wallet tx-detail <hash>
+gate-dex tx-detail <hash>
 ```
 
 Returns on-chain transaction details for the given hash.
@@ -88,7 +88,7 @@ Returns on-chain transaction details for the given hash.
 ### Swap History
 
 ```bash
-gate-wallet swap-history
+gate-dex swap-history
 ```
 
 Returns list of past swap orders.
@@ -96,7 +96,7 @@ Returns list of past swap orders.
 ### Swap Order Detail
 
 ```bash
-gate-wallet swap-detail <order_id>
+gate-dex swap-detail <order_id>
 ```
 
 Returns detail for a specific swap order.
@@ -107,19 +107,19 @@ Returns detail for a specific swap order.
 
 **Check if I have enough ETH for a transfer:**
 ```bash
-gate-wallet tokens --chain ETH
+gate-dex tokens --chain ETH
 ```
 Look for the `ETH` entry in the result — check `balance` field.
 
 **Get Solana address before sending SOL:**
 ```bash
-gate-wallet address
+gate-dex address
 # or check sol_address field
 ```
 
 **Confirm a transfer went through:**
 ```bash
-gate-wallet tx-detail 0xabcd...1234
+gate-dex tx-detail 0xabcd...1234
 ```
 
 ---
@@ -143,10 +143,10 @@ All commands output JSON. Key fields in token list result:
 
 | Issue | Solution |
 |-------|----------|
-| `Not logged in` | Run `gate-wallet login` first |
+| `Not logged in` | Run `gate-dex login` first |
 | Token not showing | Try without `--chain` filter; L2 balances may have indexing delay |
-| Balance appears 0 | Use `gate-wallet rpc --chain ETH --method eth_getBalance` to verify on-chain |
-| Solana balance missing | Check with `gate-wallet rpc --chain SOL --method getBalance` |
+| Balance appears 0 | Use `gate-dex rpc --chain ETH --method eth_getBalance` to verify on-chain |
+| Solana balance missing | Check with `gate-dex rpc --chain SOL --method getBalance` |
 
 ---
 
@@ -155,9 +155,9 @@ All commands output JSON. Key fields in token list result:
 **After balance / token query:**
 ```
 You can also:
-- Transfer tokens: gate-wallet send --chain ETH --to 0x... --amount 0.1
-- Swap tokens: gate-wallet swap --from-chain 1 --to-chain 1 --from - --to <token> --amount 0.01
-- Check token security: gate-wallet token-risk --chain eth --address <contract>
+- Transfer tokens: gate-dex send --chain ETH --to 0x... --amount 0.1
+- Swap tokens: gate-dex swap --from-chain 1 --to-chain 1 --from - --to <token> --amount 0.01
+- Check token security: gate-dex token-risk --chain eth --address <contract>
 ```
 
 | User Follow-up | Route |

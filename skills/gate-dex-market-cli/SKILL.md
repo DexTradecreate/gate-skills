@@ -2,7 +2,7 @@
 name: gate-dex-market-cli
 version: "2026.4.23-2"
 updated: "2026-04-23"
-description: "gate-dex CLI market & token data skill. K-line, liquidity pool events, trading stats, token info (price/mcap), token security audit, token rankings, new token listings, chain config, and raw RPC calls. Read-only; no signing involved."
+description: "gate-dex CLI market & token data skill: K-line, liquidity, trading stats, token info, security audit, rankings, new listings, chain config, and raw RPC. Read-only; no signing. Use this skill whenever the user asks for on-chain market data, token info, or security audits via the gate-dex CLI. Trigger phrases include K-line, token price, market cap, token risk, honeypot check, token rankings, new tokens, liquidity, tx stats, chain config, rpc."
 homepage: https://git.fulltrust.link/web3/ai/gate-dex-cli
 user-invocable: true
 metadata:
@@ -37,6 +37,15 @@ metadata:
 ---
 
 # Gate DEX CLI — Market & Token Data
+
+## General Rules
+
+⚠️ STOP — You MUST read and strictly follow the shared runtime rules before proceeding.
+Do NOT select or call any tool until all rules are read. These rules have the highest priority.
+→ Read [gate-runtime-rules.md](https://github.com/gate/gate-skills/blob/master/skills/gate-runtime-rules.md)
+- **Only call MCP tools explicitly listed in this skill.** Tools not documented here must NOT be called, even if they
+  exist in the MCP server.
+- **Only use the `gate-dex` CLI subcommands explicitly listed in this skill and its references.** Commands not documented here must NOT be run for these workflows, even if other interfaces expose them.
 
 > Read-only market data via CLI. K-line, liquidity, trading stats, token info/risk/rank, new listings, chain config, and raw RPC. No GV checkin or signing involved.
 
@@ -241,8 +250,103 @@ You can also:
 
 ---
 
+## Workflow
+
+### Step 1: Classify intent
+
+Map the user request to one of: `kline`, `liquidity`, `tx-stats`, `token-info`, `token-risk`, `token-rank`, `new-tokens`, `swap-tokens` (discovery), `bridge-tokens`, `chain-config`, or `rpc`.
+
+Key data to extract:
+- `intent`: matched command
+- `chain`: chain name (case-insensitive; e.g. `eth`, `bsc`, `arb`, `sol`)
+- `address`: token contract address (when applicable)
+
+### Step 2: Resolve missing parameters
+
+- If the user gave a token symbol but no address → run `gate-dex swap-tokens --chain <chain> --search <symbol>` and confirm the resolved address.
+- If `chain` is missing for a per-chain command → ask the user; do not guess.
+- For `rpc`, ensure `--params` is a valid JSON array string.
+
+Key data to extract:
+- `resolved_address`
+- `resolved_chain`
+
+### Step 3: Run the read-only command
+
+Call exactly one `gate-dex` subcommand from the table in **CLI Commands**. No write or signing commands are available in this skill.
+
+Key data to extract:
+- `cli_stdout`: raw CLI output
+
+### Step 4: Render the report
+
+Format the output per **Report Template** below; surface the Risk Disclosure when the response includes price/security/analytical content.
+
+## Judgment Logic Summary
+
+| User Intent | Trigger Phrases | Command |
+|-------------|-----------------|---------|
+| Price chart / candlesticks | "K-line", "candlestick", "OHLCV" | `gate-dex kline` |
+| Liquidity events | "liquidity pool", "add/remove liquidity" | `gate-dex liquidity` |
+| Trading volume / activity | "tx stats", "trading volume", "buy/sell stats" | `gate-dex tx-stats` |
+| Price / market cap | "token info", "market cap", "price of" | `gate-dex token-info` |
+| Security audit | "is it safe", "honeypot", "audit token" | `gate-dex token-risk` |
+| Top movers | "rankings", "top gainers", "leaderboard" | `gate-dex token-rank` |
+| Recently listed | "new tokens", "just launched", "newly listed" | `gate-dex new-tokens` |
+| Resolve address | "address of", "find token", "search symbol" | `gate-dex swap-tokens --search` |
+| Bridge pairs | "bridge tokens", "cross-chain pairs" | `gate-dex bridge-tokens` |
+| Chain metadata | "chain config", "RPC endpoint", "chain id" | `gate-dex chain-config` |
+| Raw RPC | "eth_call", "eth_getBalance", "rpc" | `gate-dex rpc` |
+
+## Report Template
+
+For data-bearing commands (`token-info`, `token-rank`, `kline`, `tx-stats`, `liquidity`, `new-tokens`, `chain-config`):
+
+```
+========== {Command Title} ==========
+Chain:        {resolved_chain}
+Address:      {resolved_address}
+Result:
+{key_value_table_or_compact_summary}
+========================================
+{Optional follow-up suggestions}
+
+Risk Disclosure: For informational purposes only; not investment, financial, tax, or legal advice. Verify on-chain data independently.
+```
+
+For `token-risk`:
+
+```
+========== Token Risk Audit ==========
+Chain:               {chain}
+Address:             {address}
+Honeypot:            {yes/no/unknown}
+Contract ownership:  {renounced/owner_known}
+Trading restrictions:{summary}
+Liquidity lock:      {locked_until/unlocked/unknown}
+========================================
+{Warning if any flag is set; recommend confirmation before swap}
+```
+
+For `rpc`:
+
+```
+========== RPC Result ==========
+Chain:   {chain}
+Method:  {method}
+Params:  {params_json}
+Result:  {raw_json_response}
+================================
+```
+
 ## Security Rules
 
 1. **Audit before swapping unfamiliar tokens**: Run `token-risk` first.
 2. **RPC params must be valid JSON**: `--params` must be a JSON array string.
 3. **Read-only**: All commands here are read-only — no signing or fund movement.
+
+---
+
+## Risk Disclosure
+
+The above is for informational purposes only and does not constitute investment, financial, tax, or legal advice. AI-assisted outputs are for general information only and do not constitute any representation, warranty, or guarantee by Gate. Digital asset prices, market data, and security audits may be incomplete or delayed; always verify on-chain data independently before acting.

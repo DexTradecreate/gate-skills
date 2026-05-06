@@ -4,6 +4,12 @@ All notable changes to `gate-dex-wallet` skill will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2026.5.6-1] - 2026-05-06
+
+### Changed
+
+- **SKILL.md**: General Rules block adds the canonical MCP tool allowlist bullet. Replaced all `./references/*.md` relative Markdown links with inline code paths to avoid Skills Hub 404 on the rendered detail page. Security Rules expanded with transaction irreversibility reminder (transfer / withdraw / x402) and an AI output disclaimer.
+
 ## [2026.4.16-1] - 2026-04-16
 
 ### Changed
