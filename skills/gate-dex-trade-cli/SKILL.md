@@ -2,7 +2,7 @@
 name: gate-dex-trade-cli
 version: "2026.4.24-1"
 updated: "2026-04-24"
-description: "gate-dex CLI swap skill. One-shot DEX swap (quote → GV checkin → sign → broadcast) via the swap command. GV checkin is built in — no external binary required. Supports EVM multi-chain and Solana. Includes approve flow for ERC20."
+description: "gate-dex CLI swap skill: one-shot DEX swap (quote → GV checkin → sign → broadcast) via the swap command. GV checkin built in — no external binary. Supports EVM multi-chain and Solana, with ERC20 approve flow. Use this skill whenever the user wants to swap, exchange, buy, sell, convert, or bridge tokens via the gate-dex CLI. Trigger phrases include swap, exchange, buy, sell, convert, bridge, cross-chain, quote, swap history, swap detail, swap-tokens, bridge-tokens."
 homepage: https://git.fulltrust.link/web3/ai/gate-dex-cli
 user-invocable: true
 metadata:
@@ -37,6 +37,15 @@ metadata:
 ---
 
 # Gate DEX CLI — Swap
+
+## General Rules
+
+⚠️ STOP — You MUST read and strictly follow the shared runtime rules before proceeding.
+Do NOT select or call any tool until all rules are read. These rules have the highest priority.
+→ Read [gate-runtime-rules.md](https://github.com/gate/gate-skills/blob/master/skills/gate-runtime-rules.md)
+- **Only call MCP tools explicitly listed in this skill.** Tools not documented here must NOT be called, even if they
+  exist in the MCP server.
+- **Only use the `gate-dex` CLI subcommands explicitly listed in this skill and its references.** Commands not documented here must NOT be run for these workflows, even if other interfaces expose them.
 
 > One-shot DEX swap via CLI. GV checkin + sign + broadcast are all built into the `swap` command. No external `tx-checkin` binary needed. Supports EVM and Solana.
 
@@ -233,37 +242,67 @@ Solana flow:
 
 ---
 
-## Agent Execution Flow
+## Workflow
 
-```
-Step 1: Auth check
-  If not logged in → run gate-dex login
+### Step 1: Auth check
 
-Step 2: Collect parameters
-  Required: from-chain, to-chain, from-token, to-token, amount
-  Optional: slippage
-  If token address unknown → run gate-dex swap-tokens --search <symbol>
+Call `gate-dex status` to verify the session.
 
-Step 3: Get quote (show to user)
-  Run: gate-dex quote --from-chain <id> --to-chain <id> --from <token> --to <token> --amount <n>
-  Display: estimated output, price impact, route, fee
+Key data to extract:
+- `is_authenticated`: boolean
+- If not logged in → instruct the user to run `gate-dex login` (delegated to `gate-dex-wallet-cli`).
 
-Step 4: User confirmation in chat (MANDATORY)
-  Show: from chain/token/amount → to chain/token, estimated output, slippage
-  Wait for explicit "confirm" reply
-  - "cancel" → abort
-  - "modify" → return to Step 2
+### Step 2: Collect parameters
 
-Step 5: Execute (after user confirms)
-  Run: gate-dex swap --from-chain <id> --to-chain <id> --from <token> --to <token> --amount <n> [--slippage <n>]
-  CLI handles GV checkin, signing, and broadcast internally
+Required: `from-chain`, `to-chain` (defaults to `from-chain`), `from-token`, `to-token`, `amount`. Optional: `slippage`, `to-wallet` (cross-chain only).
 
-Step 6: Display result
-  Show tx hash + block explorer link + order ID
-  Suggest next actions
-```
+If a token symbol is given without an address → call `gate-dex swap-tokens --chain <chain> --search <symbol>` and confirm the resolved address with the user.
+
+Key data to extract:
+- `from_chain`, `to_chain`, `from_token`, `to_token`, `amount`, `slippage`, `to_wallet`
+
+### Step 3: Get quote
+
+Call `gate-dex quote --from-chain <id> --to-chain <id> --from <token> --to <token> --amount <n>`.
+
+Key data to extract:
+- `estimated_out`, `price_impact`, `route`, `fee`, `slippage_used`
+
+### Step 4: User confirmation in chat (MANDATORY)
+
+Render the **Swap Confirmation Template** and wait for an explicit "confirm" reply.
+
+- "cancel" → abort.
+- "modify" → return to Step 2.
+
+### Step 5: Execute
+
+Call `gate-dex swap --from-chain <id> --to-chain <id> --from <token> --to <token> --amount <n> [--slippage <n>] [--to-wallet <addr>]`. The CLI handles GV check-in, signing, and broadcast internally.
+
+Key data to extract:
+- `tx_hash`, `order_id`, `explorer_url`
+
+### Step 6: Render the report
+
+Format the output per **Report Template** below. Surface the mandatory Risk Disclosure.
 
 **NEVER run `gate-dex swap` before receiving explicit user confirmation in Step 4.**
+
+---
+
+## Judgment Logic Summary
+
+| User Intent | Trigger Phrases | Action |
+|-------------|-----------------|--------|
+| Same-chain swap | "swap", "exchange", "convert", "buy", "sell" + same chain | quote → confirm → swap (Steps 3–5) |
+| Cross-chain bridge | "bridge", "cross-chain", different from-chain / to-chain | bridge-tokens → quote (with `--to-wallet`) → confirm → swap |
+| Quote only | "how much would I get", "estimate", "preview" with no execution intent | Step 3 only; do not execute |
+| Resolve token address | "what's the address", "find token X" | `gate-dex swap-tokens --search` |
+| List swappable tokens | "what tokens can I swap" | `gate-dex swap-tokens` |
+| List bridge pairs | "what cross-chain pairs are supported" | `gate-dex bridge-tokens` |
+| Order history | "my swap history", "past trades" | `gate-dex swap-history` |
+| Order detail | "details of order X", bridge settlement check | `gate-dex swap-detail <order_id>` |
+| Authentication failure | `Not logged in` from CLI | Route to `gate-dex-wallet-cli` for login |
 
 ---
 
@@ -279,6 +318,37 @@ Fee:      {fee_usd} USD
 ========================================
 Reply "confirm" to execute, "cancel" to abort.
 ```
+
+---
+
+## Report Template
+
+After a successful `swap` call:
+
+```
+========== Swap Result ==========
+Status:       Submitted
+From:         {amount} {from_symbol} on {from_chain}
+To:           ~{estimated_out} {to_symbol} on {to_chain}
+Tx hash:      {tx_hash}
+Explorer:     {explorer_url}
+Order ID:     {order_id}
+=================================
+{Cross-chain note (if applicable): destination arrival is asynchronous; track via gate-dex swap-detail <order_id>.}
+
+Risk Disclosure: Digital asset trading involves significant risk and may result in partial or total loss of your investment. For informational purposes only; not investment, financial, tax, or legal advice.
+```
+
+For `quote` (preview only):
+
+```
+========== Swap Quote (Preview) ==========
+{Same fields as Swap Confirmation Template}
+==========================================
+No transaction has been signed or broadcast.
+```
+
+For `swap-history` / `swap-detail`: render a compact list/table of order id, chain pair, token pair, status, timestamp.
 
 ---
 
@@ -329,7 +399,16 @@ User: "Bridge 0.1 ETH from Ethereum to USDT on Arbitrum"
 
 ## Security Rules
 
-1. **Confirm before swap**: Always get explicit user confirmation before running `gate-dex swap`.
+1. **Confirm before swap**: Always get explicit user confirmation before running `gate-dex swap`. Without explicit user confirmation in chat, no `swap` command may be executed — only `quote` and other read-only commands are allowed.
 2. **Show quote first**: Always run `quote` first so the user can see estimated output.
 3. **No tx-checkin binary**: CLI handles GV checkin internally — do not run any external binary.
 4. **Audit unfamiliar tokens**: Recommend `gate-dex token-risk` before swapping unknown tokens.
+5. **Transaction irreversibility**: On-chain swaps and bridges are generally irreversible. Always re-verify chain, token addresses, amount, and (for bridge) destination wallet with the user before executing.
+
+---
+
+## Risk Disclosure
+
+**Mandatory in trade output:** Digital asset trading involves significant risk and may result in partial or total loss of your investment. Cross-chain bridge transactions add settlement-time and counterparty risk; destination arrival is asynchronous.
+
+The above is for informational purposes only and does not constitute investment, financial, tax, or legal advice. AI-assisted outputs are for general information only and do not constitute any representation, warranty, or guarantee by Gate. This skill is intended for users aged 18 or above with full civil capacity; availability may vary by jurisdiction.

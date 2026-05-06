@@ -2,10 +2,10 @@
 name: gate-dex-wallet-cli-transfer
 version: "2026.4.23-2"
 updated: "2026-04-23"
-description: "gate-wallet CLI transfer module. Preview-only (transfer), one-shot send, send-tx (with --hex broadcast), sol-tx (build Solana unsigned tx), sign-msg (sign 32-byte hex), sign-tx (sign raw tx), and gas estimation. GV security checkin is built in — no external binary required. Supports EVM (ERC20 + native) and Solana (SOL + SPL)."
+description: "gate-dex CLI transfer module. Preview-only (transfer), one-shot send, send-tx (with --hex broadcast), sol-tx (build Solana unsigned tx), sign-msg (sign 32-byte hex), sign-tx (sign raw tx), and gas estimation. GV security checkin is built in — no external binary required. Supports EVM (ERC20 + native) and Solana (SOL + SPL)."
 ---
 
-# Gate Wallet CLI — Transfer
+# Gate DEX CLI — Transfer
 
 > Transfer module — gas estimation, preview, and one-shot send (GV checkin + sign + broadcast built-in). No external `tx-checkin` binary needed.
 
@@ -27,8 +27,8 @@ description: "gate-wallet CLI transfer module. Preview-only (transfer), one-shot
 ### Preview Only (no signing)
 
 ```bash
-gate-wallet transfer --chain ETH --to 0xRecipient --amount 1.0
-gate-wallet transfer --chain ETH --to 0xRecipient --amount 100 --token 0xdAC17F958D2ee523a2206206994597C13D831ec7
+gate-dex transfer --chain ETH --to 0xRecipient --amount 1.0
+gate-dex transfer --chain ETH --to 0xRecipient --amount 100 --token 0xdAC17F958D2ee523a2206206994597C13D831ec7
 ```
 
 Returns: estimated gas, unsigned tx details, confirm message. **Does not sign or broadcast.**
@@ -44,22 +44,22 @@ Returns: estimated gas, unsigned tx details, confirm message. **Does not sign or
 
 ```bash
 # Native token
-gate-wallet send --chain ETH --to 0xRecipient --amount 0.1
+gate-dex send --chain ETH --to 0xRecipient --amount 0.1
 
 # ERC20 token
-gate-wallet send --chain ARB --to 0xRecipient --amount 100 \
+gate-dex send --chain ARB --to 0xRecipient --amount 100 \
   --token 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9
 
 # ERC20 with explicit decimals + symbol (optional, for display)
-gate-wallet send --chain ETH --to 0xRecipient --amount 100 \
+gate-dex send --chain ETH --to 0xRecipient --amount 100 \
   --token 0xdAC17F958D2ee523a2206206994597C13D831ec7 \
   --token-decimals 6 --token-symbol USDT
 
 # Solana native SOL
-gate-wallet send --chain SOL --to BTYzG...bfxE --amount 0.1
+gate-dex send --chain SOL --to BTYzG...bfxE --amount 0.1
 
 # Solana SPL token
-gate-wallet send --chain SOL --to BTYzG...bfxE --amount 50 \
+gate-dex send --chain SOL --to BTYzG...bfxE --amount 50 \
   --token Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB \
   --token-decimals 6 --token-symbol USDT
 ```
@@ -76,10 +76,10 @@ gate-wallet send --chain SOL --to BTYzG...bfxE --amount 50 \
 ### Gas Estimation
 
 ```bash
-gate-wallet gas            # query ETH gas (default)
-gate-wallet gas ETH        # specific chain gas price
-gate-wallet gas SOL
-gate-wallet gas ARB --from 0xFrom --to 0xTo  # include gas limit estimate
+gate-dex gas            # query ETH gas (default)
+gate-dex gas ETH        # specific chain gas price
+gate-dex gas SOL
+gate-dex gas ARB --from 0xFrom --to 0xTo  # include gas limit estimate
 ```
 
 Alias support: `ARB`→`ARBITRUM`, `OP`→`OPTIMISM`, `AVAX`→`AVALANCHE`, `MATIC`→`POLYGON`.
@@ -95,8 +95,8 @@ Alias support: `ARB`→`ARBITRUM`, `OP`→`OPTIMISM`, `AVAX`→`AVALANCHE`, `MAT
 ### sign-msg — Sign 32-byte Message
 
 ```bash
-gate-wallet sign-msg <64-hex-chars> --chain ETH
-gate-wallet sign-msg aabbcc...00 --chain SOL
+gate-dex sign-msg <64-hex-chars> --chain ETH
+gate-dex sign-msg aabbcc...00 --chain SOL
 ```
 
 `<message>` must be exactly 64 hex characters (32 bytes). GV security checkin is performed automatically. If OTP is required, the CLI prompts interactively — **do not run in non-interactive agent mode without user at keyboard**.
@@ -108,8 +108,8 @@ gate-wallet sign-msg aabbcc...00 --chain SOL
 ### sign-tx — Sign Raw Transaction
 
 ```bash
-gate-wallet sign-tx <raw_tx_hex> --chain ETH
-gate-wallet sign-tx <raw_tx_hex> --chain ETH --to 0xAddr --amount 0.1 --token ETH
+gate-dex sign-tx <raw_tx_hex> --chain ETH
+gate-dex sign-tx <raw_tx_hex> --chain ETH --to 0xAddr --amount 0.1 --token ETH
 ```
 
 Signs an existing unsigned transaction hex. GV checkin built-in.
@@ -125,10 +125,10 @@ Signs an existing unsigned transaction hex. GV checkin built-in.
 
 ```bash
 # Full flow: build unsigned tx, GV checkin, sign, broadcast
-gate-wallet send-tx --chain ETH --to 0xAddr --amount 0.1 --token ETH
+gate-dex send-tx --chain ETH --to 0xAddr --amount 0.1 --token ETH
 
 # Broadcast a pre-signed transaction directly (skip build+sign)
-gate-wallet send-tx --chain ETH --hex 0x02f8...
+gate-dex send-tx --chain ETH --hex 0x02f8...
 ```
 
 Identical to `send` in the happy path, but also supports `--hex` to broadcast an already-signed transaction without going through preview/sign steps.
@@ -146,8 +146,8 @@ Identical to `send` in the happy path, but also supports `--hex` to broadcast an
 ### sol-tx — Build Solana Unsigned Transfer Tx
 
 ```bash
-gate-wallet sol-tx --to <sol_address> --amount 0.5
-gate-wallet sol-tx --to <sol_address> --amount 0.5 --from <sender> --priority-fee 1000
+gate-dex sol-tx --to <sol_address> --amount 0.5
+gate-dex sol-tx --to <sol_address> --amount 0.5 --from <sender> --priority-fee 1000
 ```
 
 Builds a native SOL transfer transaction locally using the latest blockhash from the network. Returns the unsigned transaction (base64/hex) — useful if you need to sign it separately.
@@ -166,7 +166,7 @@ Builds a native SOL transfer transaction locally using the latest blockhash from
 The agent **does not need** to run any of these steps manually — the CLI handles them all:
 
 ```
-1. Load auth from ~/.gate-wallet/auth.json
+1. Load auth from ~/.gate-dex/auth.json
 2. Display transfer preview (chain, from, to, amount, estimated gas)
 3. GV security checkin (txCheckin API) — built-in, no external binary
 4. Server-side signing
@@ -182,7 +182,7 @@ The agent **does not need** to run any of these steps manually — the CLI handl
 
 ```
 Step 1: Auth check
-  If ~/.gate-wallet/auth.json missing → route to auth.md
+  If ~/.gate-dex/auth.json missing → route to auth.md
 
 Step 2: Collect parameters
   Required: to_address, amount, chain
@@ -190,11 +190,11 @@ Step 2: Collect parameters
   If chain not specified → default to Ethereum; optionally confirm with user
 
 Step 3: Estimate balance (optional but recommended)
-  Run: gate-wallet tokens --chain <CHAIN>
+  Run: gate-dex tokens --chain <CHAIN>
   Verify: token balance >= amount; native balance >= estimated gas
 
 Step 4: Preview (optional but recommended for ERC20 / large amounts)
-  Run: gate-wallet transfer --chain <c> --to <addr> --amount <n> [--token <addr>]
+  Run: gate-dex transfer --chain <c> --to <addr> --amount <n> [--token <addr>]
   Display preview to user
 
 Step 5: User confirmation in chat (MANDATORY)
@@ -204,7 +204,7 @@ Step 5: User confirmation in chat (MANDATORY)
   - "modify" → return to Step 2
 
 Step 6: Execute (after user confirms)
-  Run: gate-wallet send --chain <c> --to <addr> --amount <n> [--token <addr>] [--token-decimals <d>] [--token-symbol <sym>]
+  Run: gate-dex send --chain <c> --to <addr> --amount <n> [--token <addr>] [--token-decimals <d>] [--token-symbol <sym>]
   CLI handles GV checkin, signing, and broadcast internally
 
 Step 7: Display result
@@ -212,7 +212,7 @@ Step 7: Display result
   Proactively suggest next actions
 ```
 
-**NEVER run `gate-wallet send` before receiving explicit user confirmation in Step 5.**
+**NEVER run `gate-dex send` before receiving explicit user confirmation in Step 5.**
 
 ---
 
@@ -276,28 +276,28 @@ Validation failure → reject with correct format guidance.
 **Example 1 (Happy Path): Send ETH**
 User: "Send 0.1 ETH to 0xDEF...5678"
 Agent:
-1. Check auth; get `evm_address` from `gate-wallet address`.
-2. Run `gate-wallet tokens --chain ETH` to verify ETH >= 0.1 + gas.
+1. Check auth; get `evm_address` from `gate-dex address`.
+2. Run `gate-dex tokens --chain ETH` to verify ETH >= 0.1 + gas.
 3. Show confirmation: chain ETH, from own EVM address, to `0xDEF...5678`, amount 0.1 ETH.
 4. User replies "confirm".
-5. Run `gate-wallet send --chain ETH --to 0xDEF...5678 --amount 0.1`.
+5. Run `gate-dex send --chain ETH --to 0xDEF...5678 --amount 0.1`.
 6. Display tx hash + etherscan link.
 
 **Example 2 (Happy Path): Send USDT on Arbitrum**
 User: "Send 100 USDT to 0xABC...1234 on Arbitrum"
 Agent:
 1. Check auth.
-2. Run `gate-wallet tokens --chain ARB` → verify USDT >= 100 AND ETH (gas) balance.
+2. Run `gate-dex tokens --chain ARB` → verify USDT >= 100 AND ETH (gas) balance.
 3. Show confirmation template with ERC20 contract address.
-4. User confirms → run `gate-wallet send --chain ARB --to 0xABC... --amount 100 --token 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9`.
+4. User confirms → run `gate-dex send --chain ARB --to 0xABC... --amount 100 --token 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9`.
 5. Display tx hash + arbiscan link.
 
 **Example 3 (Happy Path): Send SOL**
 User: "Send 0.5 SOL to BTYz...bfxE"
 Agent:
-1. Get Solana address from `gate-wallet address` → `sol_address`.
-2. Check `gate-wallet tokens --chain SOL` → SOL balance >= 0.5 + gas.
-3. Confirm with user → run `gate-wallet send --chain SOL --to BTYz...bfxE --amount 0.5`.
+1. Get Solana address from `gate-dex address` → `sol_address`.
+2. Check `gate-dex tokens --chain SOL` → SOL balance >= 0.5 + gas.
+3. Confirm with user → run `gate-dex send --chain SOL --to BTYz...bfxE --amount 0.5`.
 4. Display tx hash + solscan link.
 
 **Example 4 (Edge Case): Insufficient balance**
@@ -316,8 +316,8 @@ Tx Hash: {hash}
 Explorer: https://{explorer}/tx/{hash}
 
 You can:
-- Check updated balance: gate-wallet balance
-- View transaction: gate-wallet tx-detail {hash}
+- Check updated balance: gate-dex balance
+- View transaction: gate-dex tx-detail {hash}
 - Make another transfer
 - Swap tokens
 ```
@@ -341,8 +341,8 @@ You can:
 
 ## Security Rules
 
-1. **Confirm before send**: Always get explicit user confirmation in chat before running `gate-wallet send`.
-2. **Preview recommended**: Run `gate-wallet transfer` first for unfamiliar tokens or large amounts.
+1. **Confirm before send**: Always get explicit user confirmation in chat before running `gate-dex send`.
+2. **Preview recommended**: Run `gate-dex transfer` first for unfamiliar tokens or large amounts.
 3. **No tx-checkin binary**: Do not run any external checkin binary — it is not needed.
 4. **Address validation**: Validate recipient format before execution.
 5. **No auto-retry**: On failure, display the error; do not retry automatically.
