@@ -1,7 +1,7 @@
 ---
 name: gate-dex-wallet-cli
-version: "2026.4.24-1"
-updated: "2026-04-24"
+version: "2026.5.7-1"
+updated: "2026-05-07"
 description: "Gate DEX CLI wallet skill (pure REST). Auth via OAuth, balance, wallet/account addresses, token list, tx history, transfers, and signing. GV checkin is built into signing commands. Use this skill whenever the user wants to log in, check balance/address, view tx history, transfer tokens, or sign messages via the gate-dex CLI. Trigger phrases include login, logout, balance, address, tokens, tx history, transfer, send, sign-msg, sign-tx. For swaps use gate-dex-trade-cli; for market data use gate-dex-market-cli."
 homepage: https://git.fulltrust.link/web3/ai/gate-dex-cli
 user-invocable: true
@@ -19,7 +19,7 @@ metadata:
             "id": "download-linux-x64",
             "kind": "download",
             "os": ["linux"],
-            "url": "https://gate-dex-cli-test.gateweb3.cc/v1.0.0/gate-dex-linux-x64",
+            "url": "https://gate-dex-cli.gateweb3.cc/latest/gate-dex-linux-x64",
             "bins": ["gate-dex"],
             "label": "Download gate-dex (Linux x64)"
           },
@@ -27,7 +27,7 @@ metadata:
             "id": "download-macos-arm64",
             "kind": "download",
             "os": ["darwin"],
-            "url": "https://gate-dex-cli-test.gateweb3.cc/v1.0.0/gate-dex-darwin-arm64",
+            "url": "https://gate-dex-cli.gateweb3.cc/latest/gate-dex-darwin-arm64",
             "bins": ["gate-dex"],
             "label": "Download gate-dex (macOS arm64)"
           }
@@ -100,7 +100,7 @@ The published binary is a single self-contained executable (no Node.js runtime r
 ```bash
 # GateClaw / OpenClaw: auto-installed via setup.sh or frontmatter.install
 # Manual download (example):
-curl -fsSL https://gate-dex-cli-test.gateweb3.cc/v1.0.0/gate-dex-linux-x64 \
+curl -fsSL https://gate-dex-cli.gateweb3.cc/latest/gate-dex-linux-x64 \
   -o /usr/local/bin/gate-dex
 chmod +x /usr/local/bin/gate-dex
 
